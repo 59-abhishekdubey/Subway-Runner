@@ -191,14 +191,16 @@ function loadSave() {
       wordHuntLetters: d.wordHuntLetters || [],
       reduceMotion:    d.reduceMotion    || false,
     };
-  } catch(e) {
+  } catch(err) {
+    console.warn('Save data corrupted, resetting:', err.message);
     return { highScore:0, totalCoins:0, multiplierLevel:1, selectedChar:'jake',
              selectedTheme:'city', hoverboards:3, missionSet:null,
              missionProgress:[0,0,0], wordHuntDate:'', wordHuntLetters:[], reduceMotion:false };
   }
 }
 function saveSave(s) {
-  try { localStorage.setItem('subwayRunner2026', JSON.stringify(s)); } catch(e){}
+  try { localStorage.setItem('subwayRunner2026', JSON.stringify(s)); }
+  catch(err) { console.warn('Could not save game data:', err.message); }
 }
 
 // ============================================================
@@ -299,8 +301,8 @@ function buildCharacterMesh(charData) {
   const eyeR = makeSph(0.08,6, 0x111111); eyeR.position.set( 0.14,2.08,0.38); g.add(eyeR);
 
   // Eye shine — 10% accent glow
-  const shineL = makeSph(0.035,4, ac, ac, 1); shineL.position.set(-0.11,2.10,0.43); g.add(shineL);
-  const shineR = makeSph(0.035,4, ac, ac, 1); shineR.position.set( 0.11,2.10,0.43); g.add(shineR);
+  const shineL = makeSph(0.035,4, ac, ac, 1); shineL.position.set(-0.11,2.1,0.43); g.add(shineL);
+  const shineR = makeSph(0.035,4, ac, ac, 1); shineR.position.set( 0.11,2.1,0.43); g.add(shineR);
 
   // Legs (30% — secondary color)
   const legL = makeBox(0.32,0.82,0.32, sc, 0.7); legL.position.set(-0.22,0.2,0); legL.castShadow=true; g.add(legL);
@@ -331,7 +333,7 @@ function buildCharacterMesh(charData) {
   const shoeR = makeBox(0.34,0.18,0.42, 0x212121); shoeR.position.set( 0.22,-0.22,0.05); g.add(shoeR);
 
   // Board ring (hoverboard state — safety cyan)
-  const ringGeo = new THREE.RingGeometry(0.72,0.90,24);
+  const ringGeo = new THREE.RingGeometry(0.72,0.9,24);
   const ringMat = new THREE.MeshBasicMaterial({ color:0x00E5FF, side:THREE.DoubleSide, transparent:true, opacity:0.9 });
   const ring    = new THREE.Mesh(ringGeo, ringMat);
   ring.rotation.x=-Math.PI/2; ring.position.y=0.04; ring.visible=false; ring.name='boardRing';
@@ -720,7 +722,7 @@ class MissionSystem {
     this.progress         = [...saveData.missionProgress];
     this.onComplete       = onComplete;
     this.completedThisRun = 0;
-    this.currentSet = (saveData.missionSet && saveData.missionSet.length)
+    this.currentSet = saveData.missionSet?.length
       ? saveData.missionSet : this._generateSet();
     this.runStats = { coins:0, distance:0, powerups:0, rolls:0, jumps:0, board:0, survive:0 };
   }
@@ -853,12 +855,12 @@ class Player {
 
     // Lane switch with ease-out
     const laneSpeed = this.charData.id==='tricky' ? 10 : 7;
-    if (this.targetLane!==this.lane) {
+    if (this.targetLane===this.lane) {
+      this.mesh.position.x=lerp(this.mesh.position.x, LANES[this.targetLane], dt*14);
+    } else {
       this.laneT=Math.min(1, this.laneT+dt*laneSpeed);
       this.mesh.position.x=lerp(LANES[this.lane], LANES[this.targetLane], easeOut(this.laneT));
       if (this.laneT>=1) { this.lane=this.targetLane; this.laneT=1; }
-    } else {
-      this.mesh.position.x=lerp(this.mesh.position.x, LANES[this.targetLane], dt*14);
     }
     this.x=this.mesh.position.x;
 
@@ -1259,7 +1261,7 @@ class Game {
     this.renderer.toneMapping=THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure=1;
 
-    window.addEventListener('resize',()=>{
+    globalThis.addEventListener('resize',()=>{
       this.camera.aspect=innerWidth/innerHeight;
       this.camera.updateProjectionMatrix();
       this.renderer.setSize(innerWidth,innerHeight);
@@ -1348,13 +1350,19 @@ class Game {
 
     // Keyboard
     this.keys={};
-    window.addEventListener('keydown',e=>{ if(this.keys[e.code]) return; this.keys[e.code]=true; this._handleKey(e.code); });
-    window.addEventListener('keyup',  e=>{ this.keys[e.code]=false; });
+    globalThis.addEventListener('keydown', e=>{
+      if (this.keys[e.code]) { return; }
+      this.keys[e.code]=true;
+      this._handleKey(e.code);
+    });
+    globalThis.addEventListener('keyup', e=>{ this.keys[e.code]=false; });
 
     // Swipe
-    let tx=0,ty=0;
-    window.addEventListener('touchstart',e=>{ tx=e.touches[0].clientX; ty=e.touches[0].clientY; },{passive:true});
-    window.addEventListener('touchend', e=>{
+    let tx=0, ty=0;
+    globalThis.addEventListener('touchstart', e=>{
+      tx=e.touches[0].clientX; ty=e.touches[0].clientY;
+    },{passive:true});
+    globalThis.addEventListener('touchend', e=>{
       const dx=e.changedTouches[0].clientX-tx;
       const dy=e.changedTouches[0].clientY-ty;
       if (this.state!=='playing' || !this.player) return;
@@ -1429,7 +1437,9 @@ class Game {
     CHARACTERS.forEach(ch=>{
       const unlocked=ch.unlocked||(this.saveData.selectedChar===ch.id);
       const sel=(this.saveData.selectedChar===ch.id);
-      const statusText = sel ? '✓ SELECTED' : (unlocked ? '✓ Ready' : `🔒 ${ch.tokenCost} tokens`);
+      let statusText = '✓ Ready';
+      if (sel) { statusText = '✓ SELECTED'; }
+      else if (!unlocked) { statusText = `🔒 ${ch.tokenCost} tokens`; }
       const card=document.createElement('div');
       card.className='char-card glass'+(sel?' selected':'');
       card.innerHTML=`
@@ -1843,7 +1853,7 @@ class Game {
 // BOOT
 // ============================================================
 
-window.addEventListener('DOMContentLoaded',()=>{
+globalThis.addEventListener('DOMContentLoaded',()=>{
   try {
     new Game();
   } catch(e) {

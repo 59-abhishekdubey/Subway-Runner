@@ -540,7 +540,7 @@
       background:linear-gradient(135deg,#FF8C00,#FF4500);
       border:none; border-radius:20px; cursor:pointer;
       box-shadow:0 0 36px rgba(255,100,0,0.45),0 6px 20px rgba(0,0,0,0.35);
-      text-shadow:0 2px 4px rgba(0,0,0,0.3);
+      text-shadow:0 2px 6px rgba(0,0,0,0.55), 0 1px 2px rgba(0,0,0,0.8);
       transition:transform 0.15s,box-shadow 0.2s;
       pointer-events:all;
       animation:btnPulse 2.2s ease-in-out infinite;
@@ -557,13 +557,13 @@
     .tab-btn {
       padding:9px 18px;
       font-family:'Inter',sans-serif; font-size:13px; font-weight:700;
-      background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.14);
-      border-radius:12px; color:rgba(255,255,255,0.82);
+      background:rgba(0,0,0,0.35); border:1px solid rgba(255,255,255,0.22);
+      border-radius:12px; color:#fff;
       cursor:pointer; pointer-events:all;
       transition:all 0.2s cubic-bezier(0.4,0,0.2,1);
     }
     .tab-btn.active,.tab-btn:hover {
-      background:rgba(0,229,255,0.14); border-color:rgba(0,229,255,0.45);
+      background:rgba(0,229,255,0.25); border-color:rgba(0,229,255,0.6);
       color:#fff;
     }
     .tab-panel { display:none; }
@@ -638,7 +638,7 @@
       background:linear-gradient(135deg,#FF8C00,#FF4500);
       border:none; border-radius:16px; cursor:pointer;
       box-shadow:0 0 28px rgba(255,100,0,0.45),0 4px 16px rgba(0,0,0,0.3);
-      text-shadow:0 2px 4px rgba(0,0,0,0.3);
+      text-shadow:0 2px 6px rgba(0,0,0,0.55), 0 1px 2px rgba(0,0,0,0.8);
       transition:transform 0.15s,box-shadow 0.2s; pointer-events:all;
       animation:btnPulse 2.2s ease-in-out infinite;
     }
@@ -646,11 +646,11 @@
     .btn-play-again:active { transform:scale(0.97); animation:none; }
     .btn-secondary {
       padding:12px; font-family:'Orbitron',monospace; font-size:13px; font-weight:700;
-      letter-spacing:0.1em; color:rgba(255,255,255,0.92);
-      background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.22);
+      letter-spacing:0.1em; color:#fff;
+      background:rgba(0,0,0,0.35); border:1px solid rgba(255,255,255,0.28);
       border-radius:14px; cursor:pointer; transition:all 0.2s; pointer-events:all;
     }
-    .btn-secondary:hover { background:rgba(255,255,255,0.2); color:#fff; }
+    .btn-secondary:hover { background:rgba(0,0,0,0.5); color:#fff; }
 
     /* ===== PAUSE ===== */
     #pause-screen { display:none; background:rgba(10,30,55,0.88); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); }
@@ -664,7 +664,7 @@
       color:#fff; background:linear-gradient(135deg,#FF8C00,#FF4500);
       border:none; border-radius:14px; cursor:pointer;
       box-shadow:0 4px 16px rgba(0,0,0,0.3);
-      text-shadow:0 2px 4px rgba(0,0,0,0.3);
+      text-shadow:0 2px 6px rgba(0,0,0,0.55), 0 1px 2px rgba(0,0,0,0.8);
       transition:transform 0.1s; pointer-events:all;
     }
     .btn-resume:active { transform:scale(0.97); }
@@ -833,8 +833,8 @@
   <!-- Reduce Motion toggle -->
   <button id="reduce-motion-btn"
     style="position:fixed;bottom:8px;left:8px;z-index:300;
-           background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);
-           border-radius:8px;padding:4px 8px;color:rgba(255,255,255,0.72);
+           background:rgba(0,0,0,0.45);border:1px solid rgba(255,255,255,0.3);
+           border-radius:8px;padding:4px 8px;color:#fff;
            font-size:9px;font-family:'Space Mono',monospace;cursor:pointer;pointer-events:all;">
     ♿ Motion
   </button>
