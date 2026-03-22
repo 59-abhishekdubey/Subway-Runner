@@ -434,41 +434,42 @@ class TrackSegment {
   }
 
   _addBuildings(theme) {
-    const g      = this.group;
-    const colors = theme.buildingColors;
-    const accent = theme.groundAccent;
-
     for (let side=-1; side<=1; side+=2) {
       const count = randInt(2,3);
       for (let i=0; i<count; i++) {
-        const w = randFloat(4,9);
-        const h = randFloat(10,24);
-        const d = randFloat(4,7);
-        const col = colors[randInt(0, colors.length-1)];
-        const xPos = side*(LANE_WIDTH*1.5 + 7 + randFloat(1,4));
-        const zPos = randFloat(-TRACK_SEG_LEN/2, TRACK_SEG_LEN/2);
+        this._addBuilding(theme, side);
+      }
+    }
+  }
 
-        const bld = makeBox(w,h,d, col, 0.92);
-        bld.position.set(xPos, h/2, zPos);
-        bld.castShadow=true; bld.receiveShadow=true; g.add(bld);
+  _addBuilding(theme, side) {
+    const g      = this.group;
+    const colors = theme.buildingColors;
+    const accent = theme.groundAccent;
+    const w = randFloat(4,9);
+    const h = randFloat(10,24);
+    const d = randFloat(4,7);
+    const col  = colors[randInt(0, colors.length-1)];
+    const xPos = side*(LANE_WIDTH*1.5 + 7 + randFloat(1,4));
+    const zPos = randFloat(-TRACK_SEG_LEN/2, TRACK_SEG_LEN/2);
+    const bld = makeBox(w,h,d, col, 0.92);
+    bld.position.set(xPos, h/2, zPos);
+    bld.castShadow=true; bld.receiveShadow=true; g.add(bld);
+    this._addWindows(g, w, h, d, xPos, zPos, side);
+    if (Math.random()>0.65) {
+      const detail = makeCyl(0.5,0.6,1.2,8, accent||0x4a7a30);
+      detail.position.set(xPos + randFloat(-w*0.2,w*0.2), h+0.6, zPos);
+      g.add(detail);
+    }
+  }
 
-        // Windows — warm yellow glow (NOT neon)
-        if (h>10) {
-          for (let wy=3; wy<h-2; wy+=3.2) {
-            if (Math.random()>0.35) {
-              const win = makeBox(w*0.15, 0.72, 0.05, 0xFFF5C0, 0.1, 0xFFF0A0, 0.7);
-              win.position.set(xPos + side*0.01, wy, zPos + d/2 + 0.02);
-              g.add(win);
-            }
-          }
-        }
-
-        // Rooftop water tower / detail
-        if (Math.random()>0.65) {
-          const detail = makeCyl(0.5,0.6,1.2,8, accent||0x4a7a30);
-          detail.position.set(xPos + randFloat(-w*0.2,w*0.2), h+0.6, zPos);
-          g.add(detail);
-        }
+  _addWindows(g, w, h, d, xPos, zPos, side) {
+    if (h <= 10) { return; }
+    for (let wy=3; wy<h-2; wy+=3.2) {
+      if (Math.random()>0.35) {
+        const win = makeBox(w*0.15, 0.72, 0.05, 0xFFF5C0, 0.1, 0xFFF0A0, 0.7);
+        win.position.set(xPos + side*0.01, wy, zPos + d/2 + 0.02);
+        g.add(win);
       }
     }
   }
@@ -852,8 +853,14 @@ class Player {
 
   update(dt) {
     if (this.dead) return;
+    this._updateMovement(dt);
+    this._updatePhysics(dt);
+    this._updateAnimation(dt);
+    this._updateTimers(dt);
+    this._updateVisuals();
+  }
 
-    // Lane switch with ease-out
+  _updateMovement(dt) {
     const laneSpeed = this.charData.id==='tricky' ? 10 : 7;
     if (this.targetLane===this.lane) {
       this.mesh.position.x=lerp(this.mesh.position.x, LANES[this.targetLane], dt*14);
@@ -863,12 +870,11 @@ class Player {
       if (this.laneT>=1) { this.lane=this.targetLane; this.laneT=1; }
     }
     this.x=this.mesh.position.x;
-
-    // Lean returns to upright
     this.leanAngle=lerp(this.leanAngle, 0, dt*9);
     this.mesh.rotation.z=this.leanAngle;
+  }
 
-    // Vertical physics
+  _updatePhysics(dt) {
     if (this.activePowerup?.id==='jetpack') {
       this.jetpackY=lerp(this.jetpackY, 8, dt*3);
       this.y=this.jetpackY; this.vy=0; this.isJumping=false;
@@ -876,54 +882,48 @@ class Player {
       this.jetpackY=lerp(this.jetpackY, 0, dt*4);
       if (this.isJumping) {
         this.vy+=this.GRAVITY*dt; this.y+=this.vy*dt;
-        // Squash & stretch — stretch upward near peak
         const peakFactor=clamp(1-(this.vy/(this.JUMP_VEL*1.2)),0,1);
         this.stretchY=lerp(this.stretchY, 0.9+peakFactor*0.3, dt*10);
         if (this.y<=0) {
           this.y=0; this.vy=0; this.isJumping=false;
-          this.stretchY=1.18; // squash on landing
+          this.stretchY=1.18;
         }
       } else {
         this.y=0;
         this.stretchY=lerp(this.stretchY, 1, dt*12);
       }
     }
-
-    // Roll
     if (this.isRolling) {
       this.rollTimer-=dt;
       if (this.rollTimer<=0) { this.isRolling=false; this.rollTimer=0; }
     }
-
-    // Mesh Y + scale squash/stretch
     const tY=this.y+(this.isRolling ? -0.4 : 0);
     this.mesh.position.y=lerp(this.mesh.position.y, tY, dt*20);
     const sY=this.isRolling ? 0.48 : this.stretchY;
-    const sX=this.isRolling ? 1.4  : 1;
+    const sX=this.isRolling ? 1.4 : 1;
     this.mesh.scale.y=lerp(this.mesh.scale.y, sY, dt*16);
     this.mesh.scale.x=lerp(this.mesh.scale.x, sX, dt*12);
+  }
 
-    // Leg bob
+  _updateAnimation(dt) {
     this.legAnim+=dt*8;
     const legs=[this.mesh.children[7],this.mesh.children[8]];
     if (legs[0]&&!this.isRolling) {
       legs[0].position.z=Math.sin(this.legAnim)*0.26;
       legs[1].position.z=Math.sin(this.legAnim+Math.PI)*0.26;
     }
-    // Arm swing
     const arms=[this.mesh.children[9],this.mesh.children[10]];
     if (arms[0]&&!this.isRolling) {
       arms[0].rotation.x=Math.sin(this.legAnim+Math.PI)*0.44;
       arms[1].rotation.x=Math.sin(this.legAnim)*0.44;
     }
-
-    // Shadow shrinks as player rises
     const shadowScale=Math.max(0.1, 1-this.y*0.09);
     this.shadowMesh.position.set(this.mesh.position.x, 0.03, this.mesh.position.z);
     this.shadowMesh.scale.setScalar(shadowScale);
     this.shadowMesh.material.opacity=shadowScale*0.38;
+  }
 
-    // Board timer + warn at 5s
+  _updateTimers(dt) {
     if (this.boardActive) {
       this.boardTimer-=dt;
       const bt=document.getElementById('board-timer');
@@ -933,37 +933,34 @@ class Player {
         bt.textContent='';
       } else {
         bt.textContent=`${Math.ceil(this.boardTimer)}s`;
-        if (this.boardTimer<=5) document.getElementById('board-btn').classList.add('warn');
+        if (this.boardTimer<=5) { document.getElementById('board-btn').classList.add('warn'); }
       }
     }
-
-    // Power-up countdown ring
     if (this.activePowerup) {
       this.powerupTimer-=dt;
       const frac=clamp(this.powerupTimer/this.puMaxDuration,0,1);
       document.getElementById('pu-ring').style.strokeDashoffset=175.9*(1-frac);
       document.getElementById('pu-timer').textContent=`${Math.ceil(this.powerupTimer)}s`;
       if (this.powerupTimer<=0) {
-        if (this.activePowerup.id==='jetpack') this.jetpackY=0;
+        if (this.activePowerup.id==='jetpack') { this.jetpackY=0; }
         this.activePowerup=null;
         document.getElementById('pu-slot').classList.remove('show');
         const glow=this.mesh.getObjectByName('glow');
-        if (glow) glow.material.opacity=0;
+        if (glow) { glow.material.opacity=0; }
       }
     }
-
-    // Invincibility flash
     if (this.invincible) {
       this.invincibleTimer-=dt;
       this.mesh.visible=Math.sin(this.invincibleTimer*20)>0;
       if (this.invincibleTimer<=0) { this.invincible=false; this.mesh.visible=true; }
     }
+  }
 
-    // Board ring pulse
+  _updateVisuals() {
     const ring=this.mesh.getObjectByName('boardRing');
     if (ring) {
       ring.visible=this.boardActive;
-      if (this.boardActive) ring.material.opacity=0.7+Math.sin(Date.now()*0.006)*0.3;
+      if (this.boardActive) { ring.material.opacity=0.7+Math.sin(Date.now()*0.006)*0.3; }
     }
   }
 
@@ -1638,48 +1635,57 @@ class Game {
   _checkCollisions() {
     if (!this.player||this.player.dead) return;
     const pb=this.player.getHitBox();
+    this._checkObstacleCollisions(pb);
+    this._checkCoinCollisions(pb);
+    this._checkPickupCollisions(pb);
+    this._checkLetterCollisions(pb);
+  }
 
-    // Obstacles
+  _checkObstacleCollisions(pb) {
     for (const obs of this.trackManager.obstacles) {
-      if (!obs.alive) continue;
+      if (!obs.alive) { continue; }
       const oz=obs.mesh.position.z;
-      if (oz<-3||oz>5) continue;
-      const dx=Math.abs(pb.x-obs.mesh.position.x);
-      if (dx>obs.halfW+0.42) continue;
-
-      let pass=false;
-      if      (obs.type==='highBarrier') pass=pb.isRolling;
-      else if (obs.type==='barrier')     pass=(pb.y>1.2||pb.isRolling);
-      else if (obs.type==='train')       pass=(pb.y>3.5);
-
-      if (!pass) { obs.alive=false; this.scene.remove(obs.mesh); this._handleHit(); return; }
-    }
-
-    // Coins
-    if (this.player.activePowerup?.id==='magnet') {
-      const extra=this.player.charData.id==='fresh'?24:18;
-      const v=this.trackManager.magnetCollect(pb.x,extra);
-      if (v>0) { this.coinsThisRun+=v; this.missionSystem.track('coins',v); }
-    } else {
-      for (let i=this.trackManager.coins.length-1;i>=0;i--) {
-        const c=this.trackManager.coins[i]; if(!c.alive) continue;
-        const cz=c.mesh.position.z;
-        if (cz<-2||cz>4) continue;
-        const cx=c.mesh.position.x, cy=c.mesh.position.y;
-        if (Math.abs(pb.x-cx)<1.2 && Math.abs(cy-pb.y-1)<2.2 && Math.abs(cz)<2.4) {
-          c.alive=false; this.scene.remove(c.mesh); this.trackManager.coins.splice(i,1);
-          this.coinsThisRun+=c.value; this.missionSystem.track('coins',c.value);
-          spawnCoinFloat(c.value, innerWidth/2+pb.x*30, 110);
-          if (c.isGolden) showToast('⭐ Golden! +5','#FFD700');
-        }
+      if (oz<-3||oz>5) { continue; }
+      if (Math.abs(pb.x-obs.mesh.position.x)>obs.halfW+0.42) { continue; }
+      if (!this._canPassObstacle(obs, pb)) {
+        obs.alive=false; this.scene.remove(obs.mesh); this._handleHit(); return;
       }
     }
+  }
 
-    // Power-ups
+  _canPassObstacle(obs, pb) {
+    if (obs.type==='highBarrier') { return pb.isRolling; }
+    if (obs.type==='barrier')     { return pb.y>1.2 || pb.isRolling; }
+    if (obs.type==='train')       { return pb.y>3.5; }
+    return false;
+  }
+
+  _checkCoinCollisions(pb) {
+    if (this.player.activePowerup?.id==='magnet') {
+      const range=this.player.charData.id==='fresh'?24:18;
+      const v=this.trackManager.magnetCollect(pb.x, range);
+      if (v>0) { this.coinsThisRun+=v; this.missionSystem.track('coins',v); }
+      return;
+    }
+    for (let i=this.trackManager.coins.length-1;i>=0;i--) {
+      const c=this.trackManager.coins[i]; if(!c.alive) { continue; }
+      const cz=c.mesh.position.z;
+      if (cz<-2||cz>4) { continue; }
+      const cx=c.mesh.position.x, cy=c.mesh.position.y;
+      if (Math.abs(pb.x-cx)<1.2 && Math.abs(cy-pb.y-1)<2.2 && Math.abs(cz)<2.4) {
+        c.alive=false; this.scene.remove(c.mesh); this.trackManager.coins.splice(i,1);
+        this.coinsThisRun+=c.value; this.missionSystem.track('coins',c.value);
+        spawnCoinFloat(c.value, innerWidth/2+pb.x*30, 110);
+        if (c.isGolden) { showToast('⭐ Golden! +5','#FFD700'); }
+      }
+    }
+  }
+
+  _checkPickupCollisions(pb) {
     for (let i=this.trackManager.powerups.length-1;i>=0;i--) {
-      const pu=this.trackManager.powerups[i]; if(!pu.alive) continue;
+      const pu=this.trackManager.powerups[i]; if(!pu.alive) { continue; }
       const pz=pu.mesh.position.z;
-      if (pz<-3||pz>5) continue;
+      if (pz<-3||pz>5) { continue; }
       if (Math.abs(pb.x-pu.mesh.position.x)<1.45&&Math.abs(pz)<2.7) {
         pu.alive=false; this.scene.remove(pu.mesh); this.trackManager.powerups.splice(i,1);
         this.player.activatePowerup(pu.typeData);
@@ -1687,12 +1693,13 @@ class Game {
         showToast(`${pu.typeData.icon} ${pu.typeData.label}!`,'#fff');
       }
     }
+  }
 
-    // Letter tokens
+  _checkLetterCollisions(pb) {
     for (let i=this.trackManager.letterTokens.length-1;i>=0;i--) {
-      const lt=this.trackManager.letterTokens[i]; if(!lt.alive) continue;
+      const lt=this.trackManager.letterTokens[i]; if(!lt.alive) { continue; }
       const lz=lt.mesh.position.z;
-      if (lz<-3||lz>5) continue;
+      if (lz<-3||lz>5) { continue; }
       if (Math.abs(pb.x-lt.mesh.position.x)<1.45&&Math.abs(lz)<2.7) {
         lt.alive=false; this.scene.remove(lt.mesh); this.trackManager.letterTokens.splice(i,1);
         const r=this.wordHunt.collectLetter(lt.letter);
