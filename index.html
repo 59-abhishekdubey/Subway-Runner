@@ -208,7 +208,7 @@
     .mp-label {
       font-family:'Inter',sans-serif;
       font-size:9px; font-weight:700;
-      color:rgba(255,255,255,0.4);
+      color:rgba(255,255,255,0.75);
       text-transform:uppercase; letter-spacing:1px;
       margin-bottom:2px;
     }
@@ -506,7 +506,7 @@
     .game-logo { text-align:center; }
     .logo-eyebrow {
       font-family:'Space Mono',monospace; font-size:10px;
-      color:rgba(255,255,255,0.55); letter-spacing:0.3em;
+      color:rgba(255,255,255,0.80); letter-spacing:0.3em;
       text-transform:uppercase; margin-bottom:4px;
     }
     .logo-main {
@@ -528,7 +528,7 @@
     /* Stats row */
     .stats-row { display:flex; gap:8px; justify-content:center; }
     .stat-glass { padding:8px 16px; text-align:center; flex:1; }
-    .stat-label { font-family:'Inter',sans-serif; font-size:9px; font-weight:700; color:rgba(255,255,255,0.48); text-transform:uppercase; letter-spacing:1px; }
+    .stat-label { font-family:'Inter',sans-serif; font-size:9px; font-weight:700; color:rgba(255,255,255,0.78); text-transform:uppercase; letter-spacing:1px; }
     .stat-val   { font-family:'Orbitron',monospace; font-size:17px; font-weight:700; color:var(--c-gold); letter-spacing:0.04em; text-shadow:0 0 10px rgba(255,215,0,0.55); }
 
     /* Play button — warm energetic orange */
@@ -557,8 +557,8 @@
     .tab-btn {
       padding:9px 18px;
       font-family:'Inter',sans-serif; font-size:13px; font-weight:700;
-      background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,ffffff,0.14);
-      border-radius:12px; color:rgba(255,255,255,0.8);
+      background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.14);
+      border-radius:12px; color:rgba(255,255,255,0.82);
       cursor:pointer; pointer-events:all;
       transition:all 0.2s cubic-bezier(0.4,0,0.2,1);
     }
@@ -586,7 +586,7 @@
     .char-name   { font-family:'Orbitron',monospace; font-size:11px; font-weight:700; color:#fff; letter-spacing:0.04em; margin-bottom:2px; }
     .char-ability{ font-family:'Inter',sans-serif; font-size:9px; color:rgba(255,255,255,0.75); margin-bottom:4px; }
     .char-status { font-family:'Inter',sans-serif; font-size:10px; font-weight:700; color:var(--c-done); }
-    .char-status.locked { color:rgba(255,255,255,0.6); }
+    .char-status.locked { color:rgba(255,255,255,0.65); }
 
     /* Theme grid */
     .theme-grid { display:flex; gap:10px; justify-content:center; }
@@ -598,7 +598,7 @@
     .theme-card:hover { transform:translateY(-3px); }
     .theme-card.selected { border-color:var(--c-gold)!important; }
     .theme-swatch { width:66px; height:42px; border-radius:9px; margin:0 auto 6px; border:1px solid rgba(255,255,255,0.15); }
-    .theme-name { font-family:'Orbitron',monospace; font-size:10px; font-weight:700; color:rgba(255,255,255,0.95); letter-spacing:0.04em; }
+    .theme-name { font-family:'Orbitron',monospace; font-size:10px; font-weight:700; color:rgba(255,255,255,0.92); letter-spacing:0.04em; }
 
     /* Missions tab */
     #menu-missions { text-align:left; max-height:165px; overflow-y:auto; scrollbar-width:thin; scrollbar-color:rgba(255,255,255,0.12) transparent; }
@@ -610,7 +610,7 @@
     #gameover-screen { display:none; }
     #gameover-screen.active { display:flex; }
     .go-panel { width:100%; max-width:396px; padding:26px 24px 22px; margin:0 16px; }
-    .go-eyebrow { font-family:'Space Mono',monospace; font-size:10px; color:rgba(255,255,255,0.38); letter-spacing:0.28em; text-transform:uppercase; margin-bottom:3px; text-align:center; }
+    .go-eyebrow { font-family:'Space Mono',monospace; font-size:10px; color:rgba(255,255,255,0.72); letter-spacing:0.28em; text-transform:uppercase; margin-bottom:3px; text-align:center; }
     .go-score   { font-family:'Orbitron',monospace; font-size:50px; font-weight:900; color:var(--c-gold); text-shadow:0 0 30px rgba(255,215,0,0.45); letter-spacing:0.08em; text-align:center; line-height:1; }
     .go-best    { font-family:'Orbitron',monospace; font-size:13px; font-weight:700; color:var(--c-multiplier); height:20px; margin-top:4px; text-align:center; }
 
@@ -618,17 +618,17 @@
     .go-stat  { padding:12px; border-radius:12px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); }
     .go-stat-icon  { font-size:15px; }
     .go-stat-val   { font-family:'Orbitron',monospace; font-size:19px; font-weight:700; color:#fff; letter-spacing:0.04em; }
-    .go-stat-label { font-family:'Inter',sans-serif; font-size:10px; color:rgba(255,255,255,0.75); text-transform:uppercase; letter-spacing:0.5px; }
+    .go-stat-label { font-family:'Inter',sans-serif; font-size:10px; color:rgba(255,255,255,0.72); text-transform:uppercase; letter-spacing:0.5px; }
 
     .go-missions { margin-bottom:14px; }
-    .go-m-title  { font-family:'Space Mono',monospace; font-size:9px; color:rgba(255,255,255,0.65); text-transform:uppercase; letter-spacing:0.2em; margin-bottom:7px; text-align:center; }
+    .go-m-title  { font-family:'Space Mono',monospace; font-size:9px; color:rgba(255,255,255,0.70); text-transform:uppercase; letter-spacing:0.2em; margin-bottom:7px; text-align:center; }
     .go-m-row    { display:flex; justify-content:space-between; align-items:center; padding:5px 10px; border-radius:8px; margin-bottom:4px; background:rgba(255,255,255,0.04); }
     .go-m-text   { font-family:'Inter',sans-serif; font-size:11px; color:rgba(255,255,255,0.85); }
     .go-m-bar-wrap { width:60px; height:3px; background:rgba(255,255,255,0.1); border-radius:2px; overflow:hidden; }
     .go-m-bar    { height:100%; border-radius:2px; transition:width 0.5s; }
 
     .go-mult-row   { text-align:center; margin-bottom:16px; }
-    .go-mult-label { font-family:'Inter',sans-serif; font-size:10px; color:rgba(255,255,255,0.75); text-transform:uppercase; letter-spacing:0.1em; }
+    .go-mult-label { font-family:'Inter',sans-serif; font-size:10px; color:rgba(255,255,255,0.72); text-transform:uppercase; letter-spacing:0.1em; }
     .go-mult-val   { font-family:'Orbitron',monospace; font-size:26px; font-weight:900; color:var(--c-multiplier); text-shadow:0 0 16px rgba(118,255,3,0.5); letter-spacing:0.1em; }
 
     .go-btns { display:flex; flex-direction:column; gap:8px; }
@@ -646,11 +646,11 @@
     .btn-play-again:active { transform:scale(0.97); animation:none; }
     .btn-secondary {
       padding:12px; font-family:'Orbitron',monospace; font-size:13px; font-weight:700;
-      letter-spacing:0.1em; color:rgba(255,255,255,0.78);
-      background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.16);
+      letter-spacing:0.1em; color:rgba(255,255,255,0.92);
+      background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.22);
       border-radius:14px; cursor:pointer; transition:all 0.2s; pointer-events:all;
     }
-    .btn-secondary:hover { background:rgba(255,255,255,0.16); color:#fff; }
+    .btn-secondary:hover { background:rgba(255,255,255,0.2); color:#fff; }
 
     /* ===== PAUSE ===== */
     #pause-screen { display:none; background:rgba(10,30,55,0.88); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); }
@@ -833,12 +833,12 @@
   <!-- Reduce Motion toggle -->
   <button id="reduce-motion-btn"
     style="position:fixed;bottom:8px;left:8px;z-index:300;
-           background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);
-           border-radius:8px;padding:4px 8px;color:rgba(255,255,255,0.3);
+           background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);
+           border-radius:8px;padding:4px 8px;color:rgba(255,255,255,0.72);
            font-size:9px;font-family:'Space Mono',monospace;cursor:pointer;pointer-events:all;">
     ♿ Motion
   </button>
 
-  <script type="module" src="/src/main.js"></script>
+  <script type="module" src="./main.js"></script>
 </body>
 </html>

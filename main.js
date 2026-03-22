@@ -91,7 +91,7 @@ const THEMES = [
     groundAccent:0x240a50,
 
     ambientColor:0x9060cc,
-    ambientIntensity:1.0,
+    ambientIntensity:1,
     dirColor:0xff80cc,
     dirIntensity:1.8,
     fillColor:0x6030aa,
@@ -184,7 +184,7 @@ function loadSave() {
       multiplierLevel: d.multiplierLevel || 1,
       selectedChar:    d.selectedChar    || 'jake',
       selectedTheme:   d.selectedTheme   || 'city',
-      hoverboards:     d.hoverboards !== undefined ? d.hoverboards : 3,
+      hoverboards:     d.hoverboards ?? 3,
       missionSet:      d.missionSet      || null,
       missionProgress: d.missionProgress || [0,0,0],
       wordHuntDate:    d.wordHuntDate    || '',
@@ -192,14 +192,13 @@ function loadSave() {
       reduceMotion:    d.reduceMotion    || false,
     };
   } catch(e) {
-    console.warn('Failed to load save data:', e);
     return { highScore:0, totalCoins:0, multiplierLevel:1, selectedChar:'jake',
              selectedTheme:'city', hoverboards:3, missionSet:null,
              missionProgress:[0,0,0], wordHuntDate:'', wordHuntLetters:[], reduceMotion:false };
   }
 }
 function saveSave(s) {
-  try { localStorage.setItem('subwayRunner2026', JSON.stringify(s)); } catch(e){ console.warn('Failed to save data:', e); }
+  try { localStorage.setItem('subwayRunner2026', JSON.stringify(s)); } catch(e){}
 }
 
 // ============================================================
@@ -289,27 +288,27 @@ function buildCharacterMesh(charData) {
 
   // Body (60% — vivid primary, high contrast vs beige)
   const body = makeBox(0.92,1.2,0.62, pc, 0.65);
-  body.position.y=1.0; body.castShadow=true; g.add(body);
+  body.position.y=1; body.castShadow=true; g.add(body);
 
   // Head (skin tone)
   const head = makeSph(0.42,8, 0xFFD5A8);
-  head.position.y=2.0; head.castShadow=true; g.add(head);
+  head.position.y=2; head.castShadow=true; g.add(head);
 
   // Eyes
   const eyeL = makeSph(0.08,6, 0x111111); eyeL.position.set(-0.14,2.08,0.38); g.add(eyeL);
   const eyeR = makeSph(0.08,6, 0x111111); eyeR.position.set( 0.14,2.08,0.38); g.add(eyeR);
 
   // Eye shine — 10% accent glow
-  const shineL = makeSph(0.035,4, ac, ac, 1.0); shineL.position.set(-0.11,2.10,0.43); g.add(shineL);
-  const shineR = makeSph(0.035,4, ac, ac, 1.0); shineR.position.set( 0.11,2.10,0.43); g.add(shineR);
+  const shineL = makeSph(0.035,4, ac, ac, 1); shineL.position.set(-0.11,2.10,0.43); g.add(shineL);
+  const shineR = makeSph(0.035,4, ac, ac, 1); shineR.position.set( 0.11,2.10,0.43); g.add(shineR);
 
   // Legs (30% — secondary color)
   const legL = makeBox(0.32,0.82,0.32, sc, 0.7); legL.position.set(-0.22,0.2,0); legL.castShadow=true; g.add(legL);
   const legR = makeBox(0.32,0.82,0.32, sc, 0.7); legR.position.set( 0.22,0.2,0); legR.castShadow=true; g.add(legR);
 
   // Arms (primary)
-  const armL = makeBox(0.28,0.82,0.28, pc, 0.65); armL.position.set(-0.66,1.0,0); armL.castShadow=true; g.add(armL);
-  const armR = makeBox(0.28,0.82,0.28, pc, 0.65); armR.position.set( 0.66,1.0,0); armR.castShadow=true; g.add(armR);
+  const armL = makeBox(0.28,0.82,0.28, pc, 0.65); armL.position.set(-0.66,1,0); armL.castShadow=true; g.add(armL);
+  const armR = makeBox(0.28,0.82,0.28, pc, 0.65); armR.position.set( 0.66,1,0); armR.castShadow=true; g.add(armR);
 
   // Hat / cap accessory
   if (charData.bodyStyle==='hat') {
@@ -321,7 +320,7 @@ function buildCharacterMesh(charData) {
   }
 
   // Backpack with spray can
-  const pack  = makeBox(0.62,0.72,0.22, 0x8D6E63); pack.position.set(0,1.0,-0.41); g.add(pack);
+  const pack  = makeBox(0.62,0.72,0.22, 0x8D6E63); pack.position.set(0,1,-0.41); g.add(pack);
   const can   = makeCyl(0.06,0.06,0.3,6, ac); can.position.set(0.16,0.72,-0.55); can.rotation.x=0.3; g.add(can);
   // Accent stripe across body (10% — the eye goes here first)
   const stripe = makeBox(0.93,0.13,0.63, ac, 0.4, ac, 0.55);
@@ -342,7 +341,7 @@ function buildCharacterMesh(charData) {
   const glowGeo = new THREE.SphereGeometry(1.05, 10, 10);
   const glowMat = new THREE.MeshBasicMaterial({ color:0x00E5FF, transparent:true, opacity:0 });
   const glow    = new THREE.Mesh(glowGeo, glowMat);
-  glow.name='glow'; glow.position.y=1.0; g.add(glow);
+  glow.name='glow'; glow.position.y=1; g.add(glow);
 
   g.castShadow = true;
   return g;
@@ -361,7 +360,7 @@ class TrackSegment {
 
   _build(theme) {
     const g  = this.group;
-    const tw = LANE_WIDTH*3 + 2.0;
+    const tw = LANE_WIDTH*3 + 2;
 
     // ── TRACK SURFACE — low-sat neutral for player visibility ──
     const track = makeBox(tw, 0.28, TRACK_SEG_LEN, theme.trackColor, 0.95);
@@ -548,12 +547,12 @@ class Obstacle {
 
       // Warning light — bright amber (highest sat element)
       const wl = makeSph(0.16,6, 0xFFCA28, 0xFFCA28, 1.5);
-      wl.position.set(0,2.0,0); g.add(wl);
+      wl.position.set(0,2,0); g.add(wl);
 
     } else if (type==='highBarrier') {
       // High barrier — must ROLL under
       // Large red frame, clear gap at bottom
-      const frame = makeBox(3.0, 3.8, 0.3, 0xBF360C, 0.65, 0xBF360C, 0.1);
+      const frame = makeBox(3, 3.8, 0.3, 0xBF360C, 0.65, 0xBF360C, 0.1);
       frame.position.y=1.9; frame.castShadow=true; g.add(frame);
 
       // Hollow gap for rolling through (dark cutout)
@@ -582,7 +581,7 @@ class Coin {
     this.lane=lane; this.z=z; this.alive=true;
     this.isGolden=isGolden; this.value=isGolden?5:1;
 
-    const r   = isGolden ? 0.40 : 0.30;
+    const r   = isGolden ? 0.4 : 0.3;
     const col = isGolden ? 0xFFD700 : 0xFFC107;
     const emi = isGolden ? 0xFF8F00 : 0xF57F17;
     const eiV = isGolden ? 0.65 : 0.3;
@@ -783,7 +782,7 @@ class Player {
     this.jetpackY=0;
     this.legAnim=0;
     this.leanAngle=0;
-    this.stretchY=1.0;
+    this.stretchY=1;
     this.wasRolling=false;
 
     this.mesh = buildCharacterMesh(charData);
@@ -812,7 +811,7 @@ class Player {
     if (this.dead || this.activePowerup?.id==='jetpack') return;
     if (this.isRolling) { this.isRolling=false; this.rollTimer=0; }
     if (!this.isJumping) {
-      const extra = this.activePowerup?.id==='sneakers' ? 1.55 : 1.0;
+      const extra = this.activePowerup?.id==='sneakers' ? 1.55 : 1;
       this.vy=this.JUMP_VEL*extra; this.isJumping=true;
     } else if (this.charData.id==='tricky') {
       this.vy=this.JUMP_VEL*0.7; // Tricky: double jump
@@ -884,7 +883,7 @@ class Player {
         }
       } else {
         this.y=0;
-        this.stretchY=lerp(this.stretchY, 1.0, dt*12);
+        this.stretchY=lerp(this.stretchY, 1, dt*12);
       }
     }
 
@@ -898,7 +897,7 @@ class Player {
     const tY=this.y+(this.isRolling ? -0.4 : 0);
     this.mesh.position.y=lerp(this.mesh.position.y, tY, dt*20);
     const sY=this.isRolling ? 0.48 : this.stretchY;
-    const sX=this.isRolling ? 1.4  : 1.0;
+    const sX=this.isRolling ? 1.4  : 1;
     this.mesh.scale.y=lerp(this.mesh.scale.y, sY, dt*16);
     this.mesh.scale.x=lerp(this.mesh.scale.x, sX, dt*12);
 
@@ -917,7 +916,7 @@ class Player {
     }
 
     // Shadow shrinks as player rises
-    const shadowScale=Math.max(0.1, 1.0-this.y*0.09);
+    const shadowScale=Math.max(0.1, 1-this.y*0.09);
     this.shadowMesh.position.set(this.mesh.position.x, 0.03, this.mesh.position.z);
     this.shadowMesh.scale.setScalar(shadowScale);
     this.shadowMesh.material.opacity=shadowScale*0.38;
@@ -969,7 +968,7 @@ class Player {
   getHitBox() {
     return {
       x:this.mesh.position.x, y:this.y,
-      topY:this.y+(this.isRolling?1.0:2.2),
+      topY:this.y+(this.isRolling?1:2.2),
       halfW:0.72, isRolling:this.isRolling, isJumping:this.isJumping
     };
   }
@@ -1054,7 +1053,7 @@ class TrackManager {
 
   _spawnChunk(z, gameSpeed) {
     const speedRatio=clamp(gameSpeed/50,0,1);
-    const density=lerp(0.5,1.0,speedRatio);
+    const density=lerp(0.5,1,speedRatio);
 
     if (Math.random()<density) {
       const type=this._pickType();
@@ -1144,10 +1143,10 @@ class Inspector {
 
   _build() {
     const g=new THREE.Group();
-    const body=makeBox(1.05,1.45,0.68, 0x4CAF50); body.position.y=1.0; g.add(body);
+    const body=makeBox(1.05,1.45,0.68, 0x4CAF50); body.position.y=1; g.add(body);
     const head=makeSph(0.46,8, 0xFFD5A8); head.position.y=2.07; g.add(head);
     const hat=makeBox(1.05,0.38,1.05, 0x2E7D32); hat.position.y=2.64; g.add(hat);
-    const brim=makeBox(1.36,0.11,1.36, 0x1B5E20); brim.position.y=2.40; g.add(brim);
+    const brim=makeBox(1.36,0.11,1.36, 0x1B5E20); brim.position.y=2.4; g.add(brim);
     const legL=makeBox(0.36,0.88,0.36, 0x33691E); legL.position.set(-0.22,0.2,0); g.add(legL);
     const legR=makeBox(0.36,0.88,0.36, 0x33691E); legR.position.set( 0.22,0.2,0); g.add(legR);
     // Belly badge (star)
@@ -1167,13 +1166,8 @@ class Inspector {
     // HUD indicator
     const el=document.getElementById('inspector-dist');
     if (el) {
-      if (gameSpeed>35) {
-        el.textContent='👮 Inspector falling behind!';
-        el.style.color='rgba(100,220,60,0.65)';
-      } else {
-        el.textContent='👮 Inspector closing in!';
-        el.style.color='rgba(229,57,53,0.65)';
-      }
+      if (gameSpeed>35) { el.textContent='👮 Inspector falling behind!'; el.style.color='rgba(100,220,60,0.65)'; }
+      else              { el.textContent='👮 Inspector closing in!';     el.style.color='rgba(229,57,53,0.65)'; }
     }
   }
 }
@@ -1194,13 +1188,10 @@ class WordHunt {
   }
 
   collectLetter(l) {
-    if (this.complete||this.collected.has(l)) return false;
+    if (this.complete || this.collected.has(l)) return null;
     this.collected.add(l); this._render();
-    if (this.collected.size>=this.word.length) {
-      this.complete=true;
-      return 'complete';
-    }
-    return true;
+    if (this.collected.size >= this.word.length) { this.complete=true; return 'complete'; }
+    return 'found';
   }
 
   _render() {
@@ -1266,9 +1257,9 @@ class Game {
     this.renderer.shadowMap.type=THREE.PCFSoftShadowMap;
     // Tone mapping makes colors pop — important for arcade feel
     this.renderer.toneMapping=THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure=1.0;
+    this.renderer.toneMappingExposure=1;
 
-    globalThis.addEventListener('resize',()=>{
+    window.addEventListener('resize',()=>{
       this.camera.aspect=innerWidth/innerHeight;
       this.camera.updateProjectionMatrix();
       this.renderer.setSize(innerWidth,innerHeight);
@@ -1357,17 +1348,24 @@ class Game {
 
     // Keyboard
     this.keys={};
-    globalThis.addEventListener('keydown',e=>{ if(this.keys[e.code]) return; this.keys[e.code]=true; this._handleKey(e.code); });
-    globalThis.addEventListener('keyup',  e=>{ this.keys[e.code]=false; });
+    window.addEventListener('keydown',e=>{ if(this.keys[e.code]) return; this.keys[e.code]=true; this._handleKey(e.code); });
+    window.addEventListener('keyup',  e=>{ this.keys[e.code]=false; });
 
     // Swipe
     let tx=0,ty=0;
-    globalThis.addEventListener('touchstart',e=>{ tx=e.touches[0].clientX; ty=e.touches[0].clientY; },{passive:true});
-    globalThis.addEventListener('touchend',  e=>{
-      const dx=e.changedTouches[0].clientX-tx, dy=e.changedTouches[0].clientY-ty;
-      if(this.state!=='playing'||!this.player) return;
-      if(Math.abs(dx)>Math.abs(dy)) { if(dx>28) this.player.switchLane(1); else if(dx<-28) this.player.switchLane(-1); }
-      else { if(dy<-28) this.player.jump(); else if(dy>28) this.player.roll(); }
+    window.addEventListener('touchstart',e=>{ tx=e.touches[0].clientX; ty=e.touches[0].clientY; },{passive:true});
+    window.addEventListener('touchend', e=>{
+      const dx=e.changedTouches[0].clientX-tx;
+      const dy=e.changedTouches[0].clientY-ty;
+      if (this.state!=='playing' || !this.player) return;
+      if (Math.abs(dx)>Math.abs(dy)) {
+        if (dx>28) { this.player.switchLane(1); }
+        else if (dx<-28) { this.player.switchLane(-1); }
+      } else if (dy<-28) {
+        this.player.jump();
+      } else if (dy>28) {
+        this.player.roll();
+      }
     },{passive:true});
 
     // Tabs
@@ -1431,14 +1429,14 @@ class Game {
     CHARACTERS.forEach(ch=>{
       const unlocked=ch.unlocked||(this.saveData.selectedChar===ch.id);
       const sel=(this.saveData.selectedChar===ch.id);
-      const unlockedStatus = sel ? '✓ SELECTED' : (unlocked ? '✓ Ready' : `🔒 ${ch.tokenCost} tokens`);
+      const statusText = sel ? '✓ SELECTED' : (unlocked ? '✓ Ready' : `🔒 ${ch.tokenCost} tokens`);
       const card=document.createElement('div');
       card.className='char-card glass'+(sel?' selected':'');
       card.innerHTML=`
         <div class="char-avatar" style="background:radial-gradient(circle at 35% 32%,rgba(255,255,255,0.15),${this._hex(ch.color)})">${ch.emoji}</div>
         <div class="char-name">${ch.name}</div>
         <div class="char-ability">${ch.ability}</div>
-        <div class="char-status ${unlocked?'':'locked'}">${unlockedStatus}</div>`;
+        <div class="char-status ${unlocked?'':'locked'}">${statusText}</div>`;
       if (unlocked) card.addEventListener('click',()=>{
         this.saveData.selectedChar=ch.id; saveSave(this.saveData); this._buildMenu();
       });
@@ -1593,8 +1591,7 @@ class Game {
       const p=Math.min(this.missionSystem.progress[i], m.target);
       const pct=Math.min(100,(p/m.target)*100);
       const done=p>=m.target;
-      const barColor=done?'#76FF03':'#2196F3';
-      mList.innerHTML+=`<div class="go-m-row"><span class="go-m-text">${done?'✅':'◻'} ${m.text.replace('{n}',m.target)}</span><div class="go-m-bar-wrap"><div class="go-m-bar" style="width:${pct}%;background:${barColor}"></div></div></div>`;
+      mList.innerHTML+=`<div class="go-m-row"><span class="go-m-text">${done?'✅':'◻'} ${m.text.replace('{n}',m.target)}</span><div class="go-m-bar-wrap"><div class="go-m-bar" style="width:${pct}%;background:${done?'#76FF03':'#2196F3'}"></div></div></div>`;
     });
   }
 
@@ -1620,10 +1617,8 @@ class Game {
       const pi=this.missionSystem.progress[i];
       const pctI=Math.min(100,(pi/mi.target)*100);
       const done=(pi>=mi.target);
-      const itemStatus=done?' done':'';
-      const itemIcon=done?'✅':'◻';
       const div=document.createElement('div'); div.className='me-item';
-      div.innerHTML=`<div class="me-row${itemStatus}"><span>${itemIcon} ${mi.text.replace('{n}',mi.target)}</span><span>${Math.min(pi,mi.target)}/${mi.target}</span></div><div class="me-bar"><div class="me-fill${itemStatus}" style="width:${pctI}%"></div></div>`;
+      div.innerHTML=`<div class="me-row${done?' done':''}"><span>${done?'✅':'◻'} ${mi.text.replace('{n}',mi.target)}</span><span>${Math.min(pi,mi.target)}/${mi.target}</span></div><div class="me-bar"><div class="me-fill${done?' done':''}" style="width:${pctI}%"></div></div>`;
       list.appendChild(div);
     });
   }
@@ -1661,7 +1656,7 @@ class Game {
         const cz=c.mesh.position.z;
         if (cz<-2||cz>4) continue;
         const cx=c.mesh.position.x, cy=c.mesh.position.y;
-        if (Math.abs(pb.x-cx)<1.2 && Math.abs(cy-pb.y-1.0)<2.2 && Math.abs(cz)<2.4) {
+        if (Math.abs(pb.x-cx)<1.2 && Math.abs(cy-pb.y-1)<2.2 && Math.abs(cz)<2.4) {
           c.alive=false; this.scene.remove(c.mesh); this.trackManager.coins.splice(i,1);
           this.coinsThisRun+=c.value; this.missionSystem.track('coins',c.value);
           spawnCoinFloat(c.value, innerWidth/2+pb.x*30, 110);
@@ -1697,7 +1692,7 @@ class Game {
           document.getElementById('wc-word').textContent=this.wordHunt.word;
           const wc=document.getElementById('word-complete');
           wc.classList.add('show'); setTimeout(()=>wc.classList.remove('show'),2700);
-        } else if (r) {
+        } else if (r==='found') {
           showToast(`✨ "${lt.letter}" found!`,'#FFD700');
           flashScreen('#FFD700',0.1,100);
         }
@@ -1719,7 +1714,7 @@ class Game {
       triggerCameraShake(3,160,1);
       showToast('🛹 Board saved you!','#00E5FF');
       this.missionSystem.track('board');
-      this.player.invincible=true; this.player.invincibleTimer=2.0;
+      this.player.invincible=true; this.player.invincibleTimer=2;
       const ring=this.player.mesh.getObjectByName('boardRing');
       if (ring) ring.visible=false;
     } else {
@@ -1773,15 +1768,14 @@ class Game {
 
     // Score / distance
     this.distance+=this.gameSpeed*dt*0.25;
-    const multiplierFactor=(this.player.activePowerup?.id==='x2')?2:1;
-    const mult=this.missionSystem.multiplierLevel*multiplierFactor;
+    const mult=this.missionSystem.multiplierLevel*(this.player.activePowerup?.id==='x2'?2:1);
     this.score+=this.gameSpeed*dt*mult*0.5;
 
     // Mission tracking
     this.missionSystem.track('distance', this.gameSpeed*dt*0.25);
     this.missionSystem.track('survive', dt);
-    if (this.player.isRolling) this.missionSystem.track('rolls', dt*0.38);
-    if (this.player.isJumping&&this.player.y>0.5) this.missionSystem.track('jumps', dt*0.38);
+    if (this.player.isRolling) { this.missionSystem.track('rolls', dt*0.38); }
+    if (this.player.isJumping&&this.player.y>0.5) { this.missionSystem.track('jumps', dt*0.38); }
 
     const mRes=this.missionSystem.checkProgress();
     if (mRes) this._renderMissionHUD();
@@ -1849,7 +1843,7 @@ class Game {
 // BOOT
 // ============================================================
 
-globalThis.addEventListener('DOMContentLoaded',()=>{
+window.addEventListener('DOMContentLoaded',()=>{
   try {
     new Game();
   } catch(e) {
