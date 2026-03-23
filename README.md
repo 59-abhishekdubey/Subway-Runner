@@ -58,7 +58,7 @@ A high-octane 3D endless runner game inspired by Subway Surfers, built with **Th
 
 1. **Navigate to project directory**
    ```bash
-   cd "C:\Users\Lenovo\OneDrive\Desktop\2D"
+   cd "C:\Users\Lenovo\OneDrive\Desktop\Subway Runner"
    ```
 
 2. **Install dependencies**
