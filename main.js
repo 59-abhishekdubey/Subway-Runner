@@ -7,6 +7,141 @@
 import * as THREE from 'three';
 
 // ============================================================
+// SOUND SYSTEM
+// ============================================================
+
+class SoundSystem {
+  constructor() {
+    this._ctx = null;
+    this._running = false;
+    this._sirenNode = null;
+    this._sirenGain = null;
+  }
+
+  _getCtx() {
+    if (!this._ctx) {
+      this._ctx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    return this._ctx;
+  }
+
+  // 🎧 Running footsteps
+  startRunning() {
+    if (this._running) return;
+    this._running = true;
+    this._loopFootstep();
+  }
+
+  _loopFootstep() {
+    if (!this._running) return;
+
+    const ctx = this._getCtx();
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+    gain.connect(ctx.destination);
+
+    const osc = ctx.createOscillator();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(80, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.1);
+    osc.connect(gain);
+
+    osc.start();
+    osc.stop(ctx.currentTime + 0.12);
+
+    setTimeout(() => this._loopFootstep(), 280);
+  }
+
+  stopRunning() {
+    this._running = false;
+  }
+
+  // 🚨 Police siren
+  startSiren() {
+    if (this._sirenNode) return;
+
+    const ctx = this._getCtx();
+
+    this._sirenGain = ctx.createGain();
+    this._sirenGain.gain.value = 0;
+    this._sirenGain.connect(ctx.destination);
+
+    const osc = ctx.createOscillator();
+    osc.type = "sawtooth";
+    osc.frequency.value = 600;
+
+    osc.connect(this._sirenGain);
+    osc.start();
+
+    this._sirenNode = osc;
+    this._toggleSiren();
+  }
+
+  _toggleSiren() {
+    if (!this._sirenNode) return;
+
+    const ctx = this._getCtx();
+    const freq = Math.random() > 0.5 ? 600 : 800;
+
+    this._sirenNode.frequency.setTargetAtTime(freq, ctx.currentTime, 0.15);
+
+    setTimeout(() => this._toggleSiren(), 400);
+  }
+
+  setSirenVolume(v) {
+    if (!this._sirenGain) return;
+    this._sirenGain.gain.setTargetAtTime(Math.min(v, 0.3), this._getCtx().currentTime, 0.1);
+  }
+
+  stopSiren() {
+    if (this._sirenNode) {
+      try { this._sirenNode.stop(); } catch {}
+      this._sirenNode = null;
+    }
+  }
+
+  // 💥 Crash
+  playCrash() {
+    const ctx = this._getCtx();
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.4, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+    gain.connect(ctx.destination);
+
+    const buffer = ctx.createBuffer(1, ctx.sampleRate * 0.5, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+
+    for (let i = 0; i < data.length; i++) {
+      data[i] = (Math.random() * 2 - 1) * (1 - i / data.length);
+    }
+
+    const src = ctx.createBufferSource();
+    src.buffer = buffer;
+    src.connect(gain);
+    src.start();
+  }
+
+  // 🪙 Coin
+  playCoin() {
+    const ctx = this._getCtx();
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+    gain.connect(ctx.destination);
+
+    const osc = ctx.createOscillator();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(1200, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(1600, ctx.currentTime + 0.1);
+    osc.connect(gain);
+
+    osc.start();
+    osc.stop(ctx.currentTime + 0.2);
+  }
+}
+
+// ============================================================
 // GAME DATA
 // ============================================================
 
@@ -191,16 +326,14 @@ function loadSave() {
       wordHuntLetters: d.wordHuntLetters || [],
       reduceMotion:    d.reduceMotion    || false,
     };
-  } catch(err) {
-    console.warn('Save data corrupted, resetting:', err.message);
+  } catch(e) {
     return { highScore:0, totalCoins:0, multiplierLevel:1, selectedChar:'jake',
              selectedTheme:'city', hoverboards:3, missionSet:null,
              missionProgress:[0,0,0], wordHuntDate:'', wordHuntLetters:[], reduceMotion:false };
   }
 }
 function saveSave(s) {
-  try { localStorage.setItem('subwayRunner2026', JSON.stringify(s)); }
-  catch(err) { console.warn('Could not save game data:', err.message); }
+  try { localStorage.setItem('subwayRunner2026', JSON.stringify(s)); } catch(e){}
 }
 
 // ============================================================
@@ -301,8 +434,8 @@ function buildCharacterMesh(charData) {
   const eyeR = makeSph(0.08,6, 0x111111); eyeR.position.set( 0.14,2.08,0.38); g.add(eyeR);
 
   // Eye shine — 10% accent glow
-  const shineL = makeSph(0.035,4, ac, ac, 1); shineL.position.set(-0.11,2.1,0.43); g.add(shineL);
-  const shineR = makeSph(0.035,4, ac, ac, 1); shineR.position.set( 0.11,2.1,0.43); g.add(shineR);
+  const shineL = makeSph(0.035,4, ac, ac, 1); shineL.position.set(-0.11,2.10,0.43); g.add(shineL);
+  const shineR = makeSph(0.035,4, ac, ac, 1); shineR.position.set( 0.11,2.10,0.43); g.add(shineR);
 
   // Legs (30% — secondary color)
   const legL = makeBox(0.32,0.82,0.32, sc, 0.7); legL.position.set(-0.22,0.2,0); legL.castShadow=true; g.add(legL);
@@ -333,7 +466,7 @@ function buildCharacterMesh(charData) {
   const shoeR = makeBox(0.34,0.18,0.42, 0x212121); shoeR.position.set( 0.22,-0.22,0.05); g.add(shoeR);
 
   // Board ring (hoverboard state — safety cyan)
-  const ringGeo = new THREE.RingGeometry(0.72,0.9,24);
+  const ringGeo = new THREE.RingGeometry(0.72,0.90,24);
   const ringMat = new THREE.MeshBasicMaterial({ color:0x00E5FF, side:THREE.DoubleSide, transparent:true, opacity:0.9 });
   const ring    = new THREE.Mesh(ringGeo, ringMat);
   ring.rotation.x=-Math.PI/2; ring.position.y=0.04; ring.visible=false; ring.name='boardRing';
@@ -452,10 +585,13 @@ class TrackSegment {
     const col  = colors[randInt(0, colors.length-1)];
     const xPos = side*(LANE_WIDTH*1.5 + 7 + randFloat(1,4));
     const zPos = randFloat(-TRACK_SEG_LEN/2, TRACK_SEG_LEN/2);
+
     const bld = makeBox(w,h,d, col, 0.92);
     bld.position.set(xPos, h/2, zPos);
     bld.castShadow=true; bld.receiveShadow=true; g.add(bld);
+
     this._addWindows(g, w, h, d, xPos, zPos, side);
+
     if (Math.random()>0.65) {
       const detail = makeCyl(0.5,0.6,1.2,8, accent||0x4a7a30);
       detail.position.set(xPos + randFloat(-w*0.2,w*0.2), h+0.6, zPos);
@@ -1221,6 +1357,7 @@ class Game {
     this.elapsed=0; this.gameSpeed=SPEED_TIERS[0].speed; this.speedTierIdx=0;
     this.lastMilestone=0;
 
+    this.sound = new SoundSystem();
     this._initThree();
     this._initLighting();
     this._initUI();
@@ -1542,6 +1679,9 @@ class Game {
     document.getElementById('hud-missions').classList.remove('open');
     document.getElementById('mission-pill').style.display='block';
 
+    this.sound.startRunning();
+    this.sound.startSiren();
+
     this._renderMissionHUD();
     this._updateHUD();
     this.camera.position.set(0,10,14);
@@ -1570,6 +1710,9 @@ class Game {
     if (!this.player||this.player.dead) return;
     this.player.dead=true; this.isDeathAnim=true; this.deathAnimTimer=1.4;
     this.state='dead';
+    this.sound.playCrash();
+    this.sound.stopRunning();
+    this.sound.stopSiren();
     flashScreen('#FF1744', 0.78, 200);
     triggerCameraShake(5, 320, 3);
 
@@ -1646,9 +1789,15 @@ class Game {
       if (!obs.alive) { continue; }
       const oz=obs.mesh.position.z;
       if (oz<-3||oz>5) { continue; }
-      if (Math.abs(pb.x-obs.mesh.position.x)>obs.halfW+0.42) { continue; }
-      if (!this._canPassObstacle(obs, pb)) {
-        obs.alive=false; this.scene.remove(obs.mesh); this._handleHit(); return;
+      const dx=Math.abs(pb.x-obs.mesh.position.x);
+      if (dx>obs.halfW+0.42) { continue; }
+
+      const pass = this._canPassObstacle(obs, pb);
+      if (!pass) {
+        obs.alive=false;
+        this.scene.remove(obs.mesh);
+        this._handleHit();
+        return;
       }
     }
   }
@@ -1675,6 +1824,7 @@ class Game {
       if (Math.abs(pb.x-cx)<1.2 && Math.abs(cy-pb.y-1)<2.2 && Math.abs(cz)<2.4) {
         c.alive=false; this.scene.remove(c.mesh); this.trackManager.coins.splice(i,1);
         this.coinsThisRun+=c.value; this.missionSystem.track('coins',c.value);
+        this.sound.playCoin();
         spawnCoinFloat(c.value, innerWidth/2+pb.x*30, 110);
         if (c.isGolden) { showToast('⭐ Golden! +5','#FFD700'); }
       }
@@ -1774,6 +1924,10 @@ class Game {
     this.trackManager.update(dt, this.gameSpeed, this.elapsed);
     this.inspector.update(dt, this.gameSpeed);
     this.dustSystem.update(dt);
+
+    // Update siren volume based on police distance (danger level)
+    const policeDanger = Math.max(0, 1 - (this.gameSpeed / 35));
+    this.sound.setSirenVolume(policeDanger * 0.25);
 
     // Dust burst when roll ends
     if (this.player.wasRolling&&!this.player.isRolling) {
