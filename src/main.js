@@ -1,2 +1,2 @@
-// Vite entry point - imports the parent directory main.js
-import('../main.js');
+// Vite entry point - sync import loads the game
+import '../main.js';
