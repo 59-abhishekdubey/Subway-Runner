@@ -11,16 +11,14 @@ import * as THREE from 'three';
 // ============================================================
 
 class SoundSystem {
-  constructor() {
-    this._ctx = null;
-    this._running = false;
-    this._sirenNode = null;
-    this._sirenGain = null;
-  }
+  _ctx = null;
+  _running = false;
+  _sirenNode = null;
+  _sirenGain = null;
 
   _getCtx() {
     if (!this._ctx) {
-      this._ctx = new (window.AudioContext || window.webkitAudioContext)();
+      this._ctx = new (globalThis.AudioContext || globalThis.webkitAudioContext)();
     }
     return this._ctx;
   }
@@ -327,13 +325,18 @@ function loadSave() {
       reduceMotion:    d.reduceMotion    || false,
     };
   } catch(e) {
+    // localStorage unavailable or JSON parse failed - return defaults
+    console.warn('Failed to load save data:', e.message);
     return { highScore:0, totalCoins:0, multiplierLevel:1, selectedChar:'jake',
              selectedTheme:'city', hoverboards:3, missionSet:null,
              missionProgress:[0,0,0], wordHuntDate:'', wordHuntLetters:[], reduceMotion:false };
   }
 }
 function saveSave(s) {
-  try { localStorage.setItem('subwayRunner2026', JSON.stringify(s)); } catch(e){}
+  try { localStorage.setItem('subwayRunner2026', JSON.stringify(s)); } catch(e) {
+    // localStorage unavailable - silently fail with warning
+    console.warn('Failed to save data:', e.message);
+  }
 }
 
 // ============================================================
