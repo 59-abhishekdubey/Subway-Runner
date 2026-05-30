@@ -1063,36 +1063,45 @@ class Player {
   }
 
   _updateTimers(dt) {
-    if (this.boardActive) {
-      this.boardTimer-=dt;
-      const bt=document.getElementById('board-timer');
-      if (this.boardTimer<=0) {
-        this.boardActive=false;
-        document.getElementById('board-btn').classList.remove('active-board','warn');
-        bt.textContent='';
-      } else {
-        bt.textContent=`${Math.ceil(this.boardTimer)}s`;
-        if (this.boardTimer<=5) { document.getElementById('board-btn').classList.add('warn'); }
-      }
+    this._updateBoardTimer(dt);
+    this._updatePowerupTimer(dt);
+    this._updateInvincibilityTimer(dt);
+  }
+
+  _updateBoardTimer(dt) {
+    if (!this.boardActive) return;
+    this.boardTimer-=dt;
+    const bt=document.getElementById('board-timer');
+    if (this.boardTimer<=0) {
+      this.boardActive=false;
+      document.getElementById('board-btn').classList.remove('active-board','warn');
+      bt.textContent='';
+    } else {
+      bt.textContent=`${Math.ceil(this.boardTimer)}s`;
+      if (this.boardTimer<=5) { document.getElementById('board-btn').classList.add('warn'); }
     }
-    if (this.activePowerup) {
-      this.powerupTimer-=dt;
-      const frac=clamp(this.powerupTimer/this.puMaxDuration,0,1);
-      document.getElementById('pu-ring').style.strokeDashoffset=175.9*(1-frac);
-      document.getElementById('pu-timer').textContent=`${Math.ceil(this.powerupTimer)}s`;
-      if (this.powerupTimer<=0) {
-        if (this.activePowerup.id==='jetpack') { this.jetpackY=0; }
-        this.activePowerup=null;
-        document.getElementById('pu-slot').classList.remove('show');
-        const glow=this.mesh.getObjectByName('glow');
-        if (glow) { glow.material.opacity=0; }
-      }
+  }
+
+  _updatePowerupTimer(dt) {
+    if (!this.activePowerup) return;
+    this.powerupTimer-=dt;
+    const frac=clamp(this.powerupTimer/this.puMaxDuration,0,1);
+    document.getElementById('pu-ring').style.strokeDashoffset=175.9*(1-frac);
+    document.getElementById('pu-timer').textContent=`${Math.ceil(this.powerupTimer)}s`;
+    if (this.powerupTimer<=0) {
+      if (this.activePowerup.id==='jetpack') { this.jetpackY=0; }
+      this.activePowerup=null;
+      document.getElementById('pu-slot').classList.remove('show');
+      const glow=this.mesh.getObjectByName('glow');
+      if (glow) { glow.material.opacity=0; }
     }
-    if (this.invincible) {
-      this.invincibleTimer-=dt;
-      this.mesh.visible=Math.sin(this.invincibleTimer*20)>0;
-      if (this.invincibleTimer<=0) { this.invincible=false; this.mesh.visible=true; }
-    }
+  }
+
+  _updateInvincibilityTimer(dt) {
+    if (!this.invincible) return;
+    this.invincibleTimer-=dt;
+    this.mesh.visible=Math.sin(this.invincibleTimer*20)>0;
+    if (this.invincibleTimer<=0) { this.invincible=false; this.mesh.visible=true; }
   }
 
   _updateVisuals() {
@@ -1814,23 +1823,31 @@ class Game {
 
   _checkCoinCollisions(pb) {
     if (this.player.activePowerup?.id==='magnet') {
-      const range=this.player.charData.id==='fresh'?24:18;
-      const v=this.trackManager.magnetCollect(pb.x, range);
-      if (v>0) { this.coinsThisRun+=v; this.missionSystem.track('coins',v); }
+      this._handleMagnetCollect(pb);
       return;
     }
     for (let i=this.trackManager.coins.length-1;i>=0;i--) {
-      const c=this.trackManager.coins[i]; if(!c.alive) { continue; }
-      const cz=c.mesh.position.z;
-      if (cz<-2||cz>4) { continue; }
-      const cx=c.mesh.position.x, cy=c.mesh.position.y;
-      if (Math.abs(pb.x-cx)<1.2 && Math.abs(cy-pb.y-1)<2.2 && Math.abs(cz)<2.4) {
-        c.alive=false; this.scene.remove(c.mesh); this.trackManager.coins.splice(i,1);
-        this.coinsThisRun+=c.value; this.missionSystem.track('coins',c.value);
-        this.sound.playCoin();
-        spawnCoinFloat(c.value, innerWidth/2+pb.x*30, 110);
-        if (c.isGolden) { showToast('⭐ Golden! +5','#FFD700'); }
-      }
+      this._checkCoinCollision(pb, i);
+    }
+  }
+
+  _handleMagnetCollect(pb) {
+    const range=this.player.charData.id==='fresh'?24:18;
+    const v=this.trackManager.magnetCollect(pb.x, range);
+    if (v>0) { this.coinsThisRun+=v; this.missionSystem.track('coins',v); }
+  }
+
+  _checkCoinCollision(pb, i) {
+    const c=this.trackManager.coins[i]; if(!c.alive) { return; }
+    const cz=c.mesh.position.z;
+    if (cz<-2||cz>4) { return; }
+    const cx=c.mesh.position.x, cy=c.mesh.position.y;
+    if (Math.abs(pb.x-cx)<1.2 && Math.abs(cy-pb.y-1)<2.2 && Math.abs(cz)<2.4) {
+      c.alive=false; this.scene.remove(c.mesh); this.trackManager.coins.splice(i,1);
+      this.coinsThisRun+=c.value; this.missionSystem.track('coins',c.value);
+      this.sound.playCoin();
+      spawnCoinFloat(c.value, innerWidth/2+pb.x*30, 110);
+      if (c.isGolden) { showToast('⭐ Golden! +5','#FFD700'); }
     }
   }
 
