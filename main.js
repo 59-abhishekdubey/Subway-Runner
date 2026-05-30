@@ -437,8 +437,8 @@ function buildCharacterMesh(charData) {
   const eyeR = makeSph(0.08,6, 0x111111); eyeR.position.set( 0.14,2.08,0.38); g.add(eyeR);
 
   // Eye shine — 10% accent glow
-  const shineL = makeSph(0.035,4, ac, ac, 1); shineL.position.set(-0.11,2.10,0.43); g.add(shineL);
-  const shineR = makeSph(0.035,4, ac, ac, 1); shineR.position.set( 0.11,2.10,0.43); g.add(shineR);
+  const shineL = makeSph(0.035,4, ac, ac, 1); shineL.position.set(-0.11,2.1,0.43); g.add(shineL);
+  const shineR = makeSph(0.035,4, ac, ac, 1); shineR.position.set( 0.11,2.1,0.43); g.add(shineR);
 
   // Legs (30% — secondary color)
   const legL = makeBox(0.32,0.82,0.32, sc, 0.7); legL.position.set(-0.22,0.2,0); legL.castShadow=true; g.add(legL);
@@ -469,7 +469,7 @@ function buildCharacterMesh(charData) {
   const shoeR = makeBox(0.34,0.18,0.42, 0x212121); shoeR.position.set( 0.22,-0.22,0.05); g.add(shoeR);
 
   // Board ring (hoverboard state — safety cyan)
-  const ringGeo = new THREE.RingGeometry(0.72,0.90,24);
+  const ringGeo = new THREE.RingGeometry(0.72,0.9,24);
   const ringMat = new THREE.MeshBasicMaterial({ color:0x00E5FF, side:THREE.DoubleSide, transparent:true, opacity:0.9 });
   const ring    = new THREE.Mesh(ringGeo, ringMat);
   ring.rotation.x=-Math.PI/2; ring.position.y=0.04; ring.visible=false; ring.name='boardRing';
